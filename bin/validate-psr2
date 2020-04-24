@@ -1,0 +1,56 @@
+#!/bin/sh
+
+LRED='\033[1;31m'
+RED='\033[0;31m'
+LGREEN='\033[1;32m'
+NC='\033[0m'
+
+PROJECT=`php -r "echo dirname(dirname(dirname(realpath('$0'))));"`
+
+## Determine if a php files has var_dump script
+FILES_PATTERN='\.(php)(\..+)?$'
+FORBIDDEN='var_dump'
+git diff --cached --name-only | \
+    grep -E $FILES_PATTERN | GREP_COLOR='38;5;11' xargs grep --color --with-filename -n -oe "${FORBIDDEN}(.*)" &&
+    printf "\n${LRED}${FORBIDDEN}${NC} references was found.\nPlease ${LGREEN}clean up your code${NC} before commit.\n" && exit 1
+
+
+FILES_PATTERN='\.(js|coffee)(\..+)?$'
+FORBIDDEN='console.log'
+git diff --cached --name-only | \
+    grep -E $FILES_PATTERN | GREP_COLOR='38;5;11' xargs grep --color --with-filename -n -oe "${FORBIDDEN}(.*)" &&
+    printf "\n${LRED}${FORBIDDEN}${NC} references was found.\nPlease ${LGREEN}clean up your code${NC} before commit.\n" && exit 1
+
+STAGED_FILES_CMD=`git diff --cached --name-only --diff-filter=ACMR HEAD | grep \\\\.php`
+
+# Determine if a file list is passed
+if [ "$#" -eq 1 ]
+then
+	oIFS=$IFS
+	IFS='
+	'
+	SFILES="$1"
+	IFS=$oIFS
+fi
+SFILES=${SFILES:-$STAGED_FILES_CMD}
+
+printf "Checking PHP Lint...\n ---------------------\n-"
+
+for FILE in $SFILES
+do
+	php -l -d display_errors=0 $PROJECT/$FILE
+	if [ $? != 0 ]
+	then
+		printf "Make sure to fix ${LRED}the error(s)${NC} before commit.\n"
+		exit 1
+	fi
+	FILES="$FILES $PROJECT/$FILE"
+done
+
+if [ "$FILES" != "" ]
+then
+	printf "Running Code Sniffer...\n"
+	./vendor/bin/phpcbf --standard=PSR2 --encoding=utf-8 -n -p $FILES
+fi
+
+exit $?
