@@ -34,7 +34,7 @@ then
 fi
 SFILES=${SFILES:-$STAGED_FILES_CMD}
 
-printf "Checking PHP Lint...\n ---------------------\n-"
+printf "\nChecking PHP Lint...\n ---------------------\n-"
 
 for FILE in $SFILES
 do
@@ -49,8 +49,22 @@ done
 
 if [ "$FILES" != "" ]
 then
-	printf "Running Code Sniffer...\n"
+	printf "\nRunning Code Sniffer...\n"
 	./vendor/bin/phpcbf --standard=PSR2 --encoding=utf-8 -n -p $FILES
+	
+	printf "Make sure to ${LGREEN}add the modified fix${NC} to the staged before commit.\n\n"
 fi
+
+## Determine if there is left error that need to be fixed manually 
+if [ $? == 0 ]
+then
+	./vendor/bin/phpcs --standard=PSR2 --encoding=utf-8 -n -p $FILES
+fi
+
+if [ $? != 0 ]
+then
+	printf "\nPlease fix ${LRED}the error(s) above${NC} before commit.\n"
+	exit 1
+fi 
 
 exit $?

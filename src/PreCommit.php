@@ -1,17 +1,19 @@
 <?php
-
 /**
- * Git Hooks Plugins
+ * Git Hooks - Pre-commit
  *
  * @package Arifrh\GitHooks
  * @author  Arif Rahman Hakim <arifrahmanhakim.net@gmail.com>
- * @license MIT
+ * @license https://github.com/arif-rh/git-hooks/blob/master/LICENSE MIT license
  */
 
 namespace Arifrh\GitHooks;
 
 /**
- * Install
+ * Git Hooks - Pre-commit
+ *
+ * @package Arifrh\GitHooks
+ * @author  Arif Rahman Hakim <arifrahmanhakim.net@gmail.com>
  */
 class PreCommit
 {
@@ -32,16 +34,17 @@ class PreCommit
 	/**
 	 * Install Pre Commit
 	 *
-	 * @param  string $type
+	 * @param string $type Type of Coding Standard
+	 *
 	 * @return void
 	 */
 	public static function install(string $type)
 	{
-		 $bash = __DIR__.'/../bin/';
+		 $bash = __DIR__ . '/../bin/';
 
-		if ($type === 'CI4') 
+		if ($type === 'CI4')
 		{
-			$bash .= static::CI4
+			$bash .= static::CI4;
 		}
 		else
 		{
